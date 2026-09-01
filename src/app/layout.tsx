@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "Miacon 2.0 - Plataforma Interactiva de Control",
@@ -19,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="h-full antialiased">
       <body
-        className={`${inter.className} min-h-full flex flex-col bg-slate-50 text-slate-900 bg-radial-gradient bg-grid-pattern selection:bg-indigo-500 selection:text-white`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans min-h-full flex flex-col bg-slate-50 text-slate-900 bg-radial-gradient bg-grid-pattern selection:bg-blue-600 selection:text-white`}
       >
         <Navbar />
         <main className="flex-grow flex flex-col relative z-10">

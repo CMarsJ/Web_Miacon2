@@ -74,25 +74,25 @@ export default function Lab0() {
       {/* Back Link */}
       <Link
         href="/laboratorios"
-        className="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-colors"
+        className="inline-flex items-center text-xs font-bold text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-1.5" />
         Volver a la Ruta de Laboratorios
       </Link>
 
       {/* Main Container Card */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-10 border border-indigo-100 shadow-2xl bg-white/95 space-y-10">
+      <div className="glass-panel rounded-3xl p-6 sm:p-10 border border-blue-100 shadow-2xl bg-white/95 space-y-10">
         {/* Lab Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-8 border-b border-slate-200">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-400 p-0.5 shadow-md shadow-indigo-200">
-              <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-cyan-400 font-black text-xl">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-400 p-0.5 shadow-md shadow-blue-200">
+              <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-blue-400 font-black text-xl">
                 0
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-800 bg-blue-100/70 px-2 py-0.5 rounded">
                   Laboratorio 00
                 </span>
                 <span className="text-xs text-slate-500 font-medium">Fase de Preparación</span>
@@ -108,10 +108,10 @@ export default function Lab0() {
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
               Progreso del Lab
             </p>
-            <p className="text-xl font-black text-indigo-600">{progressPercent}%</p>
+            <p className="text-xl font-black text-blue-700">{progressPercent}%</p>
             <div className="w-full bg-slate-200 h-1.5 rounded-full mt-1 overflow-hidden">
               <div
-                className="bg-indigo-600 h-full transition-all duration-300 rounded-full"
+                className="bg-blue-700 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -121,7 +121,7 @@ export default function Lab0() {
         {/* Section 1: Checklist de Ensamblaje */}
         <section className="space-y-4">
           <div className="flex items-center gap-2.5">
-            <Wrench className="w-5 h-5 text-indigo-600" />
+            <Wrench className="w-5 h-5 text-blue-700" />
             <h2 className="text-xl font-extrabold text-slate-900">
               1. Lista de Verificación y Ensamblaje
             </h2>
@@ -160,7 +160,7 @@ export default function Lab0() {
                   onClick={() => toggleCheck(step.id)}
                   className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-4 ${
                     isChecked
-                      ? "bg-indigo-50/70 border-indigo-300 shadow-sm"
+                      ? "bg-blue-50/70 border-blue-300 shadow-sm"
                       : "bg-white border-slate-200 hover:border-slate-300"
                   }`}
                 >
@@ -169,11 +169,11 @@ export default function Lab0() {
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => {}}
-                      className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
+                      className="w-5 h-5 accent-blue-700 rounded cursor-pointer"
                     />
                   </div>
                   <div className="flex-grow">
-                    <h3 className={`text-sm font-bold ${isChecked ? "text-indigo-900" : "text-slate-800"}`}>
+                    <h3 className={`text-sm font-bold ${isChecked ? "text-blue-900" : "text-slate-800"}`}>
                       {step.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">{step.desc}</p>
@@ -188,7 +188,7 @@ export default function Lab0() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Terminal className="w-5 h-5 text-cyan-600" />
+              <Terminal className="w-5 h-5 text-blue-600" />
               <h2 className="text-xl font-extrabold text-slate-900">
                 2. Consola de Diagnóstico y Telemetría
               </h2>
@@ -199,7 +199,7 @@ export default function Lab0() {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-md ${
                 isRunningDiag
                   ? "bg-slate-300 text-slate-600 cursor-wait"
-                  : "bg-slate-900 hover:bg-indigo-700 text-white shadow-slate-200"
+                  : "bg-slate-900 hover:bg-blue-800 text-white shadow-slate-200"
               }`}
             >
               <Play className="w-3.5 h-3.5 fill-white" />
@@ -215,7 +215,7 @@ export default function Lab0() {
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
                 <span className="ml-2 text-[11px] text-slate-400">miacon-diagnostics://serial-port</span>
               </div>
-              <span className="text-[10px] text-cyan-400">115200 BAUD</span>
+              <span className="text-[10px] text-blue-400">115200 BAUD</span>
             </div>
 
             <div className="space-y-2 min-h-[120px] text-slate-300">
@@ -226,7 +226,7 @@ export default function Lab0() {
                     log.includes("VALIDACIÓN EXITOSA")
                       ? "text-emerald-400 font-bold"
                       : log.includes("[OK]")
-                      ? "text-cyan-300"
+                      ? "text-blue-300"
                       : "text-slate-400"
                   }
                 >

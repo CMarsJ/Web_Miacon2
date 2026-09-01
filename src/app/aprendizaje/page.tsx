@@ -184,15 +184,15 @@ export default function Aprendizaje() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-10 space-y-10">
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-          <BookOpen className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 shadow-sm">
+          <BookOpen className="w-3.5 h-3.5 text-blue-700" />
           <span>Módulos de Aprendizaje Interactivo</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-          Teoría de Control por <span className="text-indigo-600">Tarjetas Dinámicas</span>
+        <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+          Teoría de Control por <span className="text-blue-700">Tarjetas Dinámicas</span>
         </h1>
         <p className="text-slate-600 text-base sm:text-lg">
           Selecciona una tarjeta para interactuar con los simuladores en tiempo real y observar el comportamiento dinámico.
@@ -207,14 +207,14 @@ export default function Aprendizaje() {
             <button
               key={card.id}
               onClick={() => setActiveTab(card.id)}
-              className={`p-5 rounded-2xl text-left transition-all relative overflow-hidden flex flex-col justify-between border-2 ${
+              className={`p-5 rounded-2xl text-left transition-all relative overflow-hidden flex flex-col justify-between border-2 cursor-pointer ${
                 isSelected
-                  ? `glass-panel ${card.accentColor} shadow-lg shadow-indigo-100 ring-2 ring-indigo-400/20 -translate-y-1`
+                  ? `glass-panel ${card.accentColor} shadow-lg shadow-blue-900/10 ring-2 ring-blue-500/20 -translate-y-1`
                   : "bg-white/70 hover:bg-white border-slate-200/80 hover:border-slate-300 shadow-sm"
               }`}
             >
               {isSelected && (
-                <span className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                <span className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-700/10 to-transparent rounded-bl-full pointer-events-none" />
               )}
               <div>
                 <span
@@ -231,12 +231,12 @@ export default function Aprendizaje() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-                <span className={isSelected ? "text-indigo-600" : "text-slate-400"}>
+                <span className={isSelected ? "text-blue-700" : "text-slate-400"}>
                   {isSelected ? "Visualizando" : "Hacer clic para abrir"}
                 </span>
                 <ArrowRight
                   className={`w-4 h-4 transition-transform ${
-                    isSelected ? "text-indigo-600 translate-x-1" : "text-slate-300"
+                    isSelected ? "text-blue-700 translate-x-1" : "text-slate-300"
                   }`}
                 />
               </div>
@@ -246,7 +246,7 @@ export default function Aprendizaje() {
       </div>
 
       {/* ACTIVE CARD DETAILED INTERACTIVE BENCH */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-indigo-100 shadow-xl bg-white/90">
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-blue-100 shadow-xl bg-white/95">
         {/* ========================================================================= */}
         {/* CARD 1: FUNDAMENTOS Y LAZO */}
         {/* ========================================================================= */}
@@ -281,7 +281,7 @@ export default function Aprendizaje() {
                   onClick={() => setIsClosedLoop(true)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                     isClosedLoop
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                      ? "bg-blue-700 text-white shadow-md shadow-blue-200"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -295,7 +295,7 @@ export default function Aprendizaje() {
               {/* Controls */}
               <div className="lg:col-span-4 space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
                 <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <Sliders className="w-4 h-4 text-indigo-600" />
+                  <Sliders className="w-4 h-4 text-blue-700" />
                   Parámetros de la Planta
                 </h3>
 
@@ -303,7 +303,7 @@ export default function Aprendizaje() {
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-700 mb-2">
                     <span>Ganancia de la Planta (K)</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-indigo-600">
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-blue-700">
                       {plantGain.toFixed(1)}
                     </span>
                   </div>
@@ -314,7 +314,7 @@ export default function Aprendizaje() {
                     step="0.1"
                     value={plantGain}
                     onChange={(e) => setPlantGain(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
+                    className="w-full accent-blue-700"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     En lazo abierto, un cambio en la ganancia altera el valor final permanentemente.
@@ -347,7 +347,7 @@ export default function Aprendizaje() {
                 <div
                   className={`p-3.5 rounded-xl text-xs ${
                     isClosedLoop
-                      ? "bg-indigo-50 border border-indigo-200 text-indigo-900"
+                      ? "bg-blue-50 border border-blue-200 text-blue-900"
                       : "bg-amber-50 border border-amber-200 text-amber-900"
                   }`}
                 >
@@ -372,7 +372,7 @@ export default function Aprendizaje() {
                     <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#f8fafc" }} />
                     <ReferenceLine y={1.0} stroke="#22c55e" strokeDasharray="4 4" label={{ value: "Referencia r(t)=1.0", fill: "#22c55e", fontSize: 11 }} />
                     <ReferenceLine x="4.0" stroke="#f59e0b" strokeDasharray="3 3" label={{ value: "Perturbación", fill: "#f59e0b", fontSize: 10 }} />
-                    <Line type="monotone" dataKey="output" name="Salida y(t)" stroke={isClosedLoop ? "#6366f1" : "#f59e0b"} strokeWidth={3} dot={false} />
+                    <Line type="monotone" dataKey="output" name="Salida y(t)" stroke={isClosedLoop ? "#1e40af" : "#f59e0b"} strokeWidth={3} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -394,7 +394,7 @@ export default function Aprendizaje() {
                   Controlador Proporcional (P)
                 </h2>
                 <p className="text-sm text-slate-600 mt-1">
-                  Ley de control: <code className="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">u(t) = Kp · e(t)</code>
+                  Ley de control: <code className="font-mono font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded">u(t) = Kp · e(t)</code>
                 </p>
               </div>
             </div>
@@ -578,7 +578,7 @@ export default function Aprendizaje() {
                   setKi_PID(1.5);
                   setKd_PID(0.8);
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl transition-colors self-start md:self-auto"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-700 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl transition-colors self-start md:self-auto cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reiniciar Parámetros
@@ -598,7 +598,7 @@ export default function Aprendizaje() {
                   <div>
                     <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
                       <span>Proporcional (Kp)</span>
-                      <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-indigo-600 font-bold">
+                      <span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 text-blue-700 font-bold">
                         {kp_PID.toFixed(1)}
                       </span>
                     </div>
@@ -609,7 +609,7 @@ export default function Aprendizaje() {
                       step="0.5"
                       value={kp_PID}
                       onChange={(e) => setKp_PID(Number(e.target.value))}
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-blue-700"
                     />
                   </div>
 
@@ -665,7 +665,7 @@ export default function Aprendizaje() {
                     </div>
                     <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <p className="text-[10px] text-slate-500">T. Subida (tr)</p>
-                      <p className="text-base font-black text-indigo-600">{riseTime}s</p>
+                      <p className="text-base font-black text-blue-700">{riseTime}s</p>
                     </div>
                     <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                       <p className="text-[10px] text-slate-500">T. Asent. (ts)</p>
