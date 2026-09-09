@@ -240,21 +240,21 @@ export default function Lab0() {
           </div>
 
           {diagPassed && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                <ShieldCheck className="w-6 h-6 text-blue-700" />
                 <div>
-                  <h4 className="text-xs font-bold text-emerald-900">
+                  <h4 className="text-xs font-bold text-blue-900">
                     ¡Plataforma Miacon 2.0 Comprobada con Éxito!
                   </h4>
-                  <p className="text-[11px] text-emerald-700">
+                  <p className="text-[11px] text-blue-700">
                     Todo el hardware está listo para avanzar a la identificación y sintonización de control.
                   </p>
                 </div>
               </div>
               <Link
                 href="/laboratorios"
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-colors"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-200 transition-colors"
               >
                 Volver a la Ruta
               </Link>

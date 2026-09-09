@@ -40,38 +40,6 @@
    npm run dev
    ```
 
-3. Abrir en el navegador: [http://localhost:3000](http://localhost:3000)
-
----
-
-## ☁️ Despliegue en Vercel
-
-El proyecto está 100% optimizado y listo para ser desplegado en [Vercel](https://vercel.com/):
-
-### Opción 1: Despliegue Automático mediante GitHub (Recomendado)
-1. Sube los cambios a tu repositorio de GitHub:
-   ```bash
-   git add .
-   git commit -m "Preparar Miacon 2.0 para despliegue en Vercel"
-   git push origin main
-   ```
-2. Ve a [vercel.com](https://vercel.com/) e inicia sesión con tu cuenta de GitHub.
-3. Haz clic en **"Add New..."** > **"Project"**.
-4. Selecciona el repositorio **`Web_Miacon2`**.
-5. Vercel detectará automáticamente que es un proyecto **Next.js**. Haz clic en **"Deploy"**.
-
-### Opción 2: Despliegue desde la Terminal con Vercel CLI
-1. Instala la herramienta de Vercel (si no la tienes):
-   ```bash
-   npm i -g vercel
-   ```
-2. Ejecuta el comando de despliegue dentro del directorio del proyecto:
-   ```bash
-   vercel
-   ```
-3. Sigue las instrucciones interactivas en la terminal.
-
----
 
 ## 📄 Licencia
 

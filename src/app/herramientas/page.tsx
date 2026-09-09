@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   Calculator,
   Layers,
@@ -11,18 +10,11 @@ import {
   Plug,
   Download,
   ExternalLink,
-  CheckCircle2,
   ChevronDown,
-  ChevronUp,
-  Key,
   ShieldCheck,
   Terminal,
   Wrench,
-  Sparkles,
-  Info,
-  CheckSquare,
-  Square,
-  AlertCircle
+  X,
 } from "lucide-react";
 
 interface SoftwareTool {
@@ -232,91 +224,31 @@ const TOOLS_DATA: SoftwareTool[] = [
       isExternal: true
     },
     docUrl: "https://www.hivemq.com/docs/"
-  },
-  {
-    id: "nodered",
-    name: "Node-RED & Dashboard",
-    version: "v3.x / v4.x",
-    category: "Supervisión SCADA & Flujos IIoT",
-    icon: GitBranch,
-    shortDesc: "Herramienta de programación visual basada en nodos para crear dashboards de monitoreo, registros en base de datos y alarmas industriales.",
-    badge: "Módulo Avanzado",
-    badgeType: "advanced",
-    requirements: [
-      "Node.js versión LTS instalada (v18 o v20+)",
-      "Navegador web (acceso local en localhost:1880)"
-    ],
-    steps: [
-      {
-        title: "Paso 1: Instalar Node.js",
-        description: "Descarga e instala Node.js LTS desde nodejs.org marcando la opción de herramientas adicionales."
-      },
-      {
-        title: "Paso 2: Instalar Node-RED Globalmente",
-        description: "Abre una terminal o símbolo del sistema (PowerShell / CMD) y ejecuta el comando de instalación:",
-        code: "npm install -g --unsafe-perm node-red"
-      },
-      {
-        title: "Paso 3: Iniciar el Servidor Local",
-        description: "En tu terminal escribe `node-red`. Una vez arrancado, abre tu navegador e ingresa a `http://localhost:1880`.",
-        code: "node-red % Inicia el entorno visual de diseño de flujos"
-      },
-      {
-        title: "Paso 4: Instalar la Paleta Dashboard",
-        description: "En el menú superior derecho de Node-RED, ve a 'Manage palette > Install' y busca `@flowfuse/node-red-dashboard` o `node-red-dashboard`."
-      }
-    ],
-    primaryAction: {
-      label: "Ver Guía de Node-RED",
-      url: "https://nodered.org/docs/getting-started/",
-      isExternal: true
-    },
-    docUrl: "https://flows.nodered.org/"
   }
 ];
 
 export default function Herramientas() {
-  const [expandedId, setExpandedId] = useState<string | null>("matlab");
-  const [checklist, setChecklist] = useState<{ [key: string]: boolean }>({
-    matlab: false,
-    arduino: false,
-    drivers: false,
-    mqtt: false
-  });
+  const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
 
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
-  const toggleChecklist = (key: string) => {
-    setChecklist((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+  const selectedTool = TOOLS_DATA.find(t => t.id === selectedToolId);
 
   const getBadgeStyle = (type: SoftwareTool["badgeType"]) => {
     switch (type) {
       case "license":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "free":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-blue-50 text-blue-700 border-blue-200";
       case "cloud":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "bg-slate-100 text-slate-700 border-slate-200";
       case "advanced":
         return "bg-amber-50 text-amber-700 border-amber-200";
     }
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-10 space-y-12">
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 pt-32 pb-16 space-y-12">
       {/* 1. HEADER SECTION */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 shadow-sm">
-          <Wrench className="w-3.5 h-3.5 text-blue-700" />
-          <span>Setup Hub • Centro de Instalación & Configuración</span>
-        </div>
-
         <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
           Herramientas & <span className="text-blue-700">Setup Hub</span>
         </h1>
@@ -335,211 +267,160 @@ export default function Herramientas() {
             <p className="text-xs text-slate-500 font-medium">Haz clic en cada tarjeta para desplegar los pasos guiados de instalación</p>
           </div>
           <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 self-start sm:self-auto">
-            6 Herramientas Disponibles
+            5 Herramientas Disponibles
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {TOOLS_DATA.map((tool) => {
-            const isExpanded = expandedId === tool.id;
             const ToolIcon = tool.icon;
 
             return (
               <div
                 key={tool.id}
-                className={`bg-white rounded-3xl border-2 transition-all duration-300 overflow-hidden ${
-                  isExpanded
-                    ? "border-blue-600 shadow-xl shadow-blue-900/5 ring-2 ring-blue-500/20"
-                    : "border-slate-200/90 hover:border-slate-300 shadow-sm hover:shadow-md"
-                }`}
+                className="bg-white rounded-3xl border-2 border-slate-200/90 hover:border-blue-300 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md cursor-pointer flex flex-col h-full"
+                onClick={() => setSelectedToolId(tool.id)}
               >
-                {/* Card Header (Clickable Accordion) */}
-                <button
-                  onClick={() => toggleExpand(tool.id)}
-                  className="w-full text-left p-6 sm:p-7 flex items-start justify-between gap-4 cursor-pointer"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${
-                      isExpanded ? "bg-blue-700 text-white shadow-md shadow-blue-200" : "bg-blue-50 text-blue-700 border border-blue-100"
-                    }`}>
+                <div className="p-6 flex flex-col flex-1 gap-4">
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 flex items-center justify-center shrink-0">
                       <ToolIcon className="w-6 h-6" />
                     </div>
-
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-black text-slate-900">{tool.name}</h3>
-                        <span className="text-xs font-mono font-bold text-slate-400">{tool.version}</span>
-                      </div>
-                      <p className="text-xs font-semibold text-blue-700">{tool.category}</p>
-                      <p className="text-xs text-slate-600 leading-relaxed pt-1">{tool.shortDesc}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-3 shrink-0">
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${getBadgeStyle(tool.badgeType)}`}>
                       {tool.badge}
                     </span>
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-slate-400 bg-slate-100 transition-transform ${
-                      isExpanded ? "rotate-180 bg-blue-50 text-blue-700" : ""
-                    }`}>
-                      <ChevronDown className="w-4 h-4" />
-                    </div>
                   </div>
-                </button>
 
-                {/* Expanded Accordion Content */}
-                {isExpanded && (
-                  <div className="px-6 sm:px-7 pb-7 pt-2 border-t border-slate-100 bg-slate-50/60 space-y-6 animate-in fade-in duration-200">
-                    {/* Requirements */}
-                    <div className="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                        <ShieldCheck className="w-4 h-4 text-blue-700" />
-                        <span>Requisitos de Sistema:</span>
-                      </div>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-600">
-                        {tool.requirements.map((req, i) => (
-                          <li key={i} className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-black text-slate-900">{tool.name}</h3>
+                      <span className="text-xs font-mono font-bold text-slate-400">{tool.version}</span>
                     </div>
-
-                    {/* Numbered Steps */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Pasos de Configuración:
-                      </h4>
-
-                      <div className="space-y-3">
-                        {tool.steps.map((step, idx) => (
-                          <div key={idx} className="bg-white p-3.5 rounded-xl border border-slate-200/70 space-y-2">
-                            <div className="flex items-start gap-2.5">
-                              <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 font-mono-tech">
-                                {idx + 1}
-                              </span>
-                              <div className="space-y-1 w-full">
-                                <p className="text-xs font-bold text-slate-900">{step.title}</p>
-                                <p className="text-xs text-slate-600 leading-relaxed">{step.description}</p>
-
-                                {step.code && (
-                                  <div className="mt-2 p-2.5 rounded-lg bg-slate-900 text-slate-100 text-xs font-mono-tech flex items-center justify-between overflow-x-auto border border-slate-800">
-                                    <code>{step.code}</code>
-                                    <Terminal className="w-3.5 h-3.5 text-blue-400 ml-2 shrink-0" />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                      <a
-                        href={tool.primaryAction.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-200 transition-all"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>{tool.primaryAction.label}</span>
-                        <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-                      </a>
-
-                      {tool.docUrl && (
-                        <a
-                          href={tool.docUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full sm:w-auto py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                        >
-                          <span>Documentación</span>
-                          <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                        </a>
-                      )}
-                    </div>
+                    <p className="text-xs font-semibold text-blue-700">{tool.category}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed pt-1 line-clamp-3">{tool.shortDesc}</p>
                   </div>
-                )}
+                </div>
+
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 mt-auto flex items-center justify-between">
+                  <span className="text-xs font-bold text-blue-700">Ver Configuración</span>
+                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700">
+                    <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* 3. QUICK START CHECKLIST */}
-      <div className="p-8 rounded-3xl bg-slate-900 text-white border border-slate-800 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      {/* 3. MODAL OVERLAY */}
+      {selectedTool && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setSelectedToolId(null)}
+          ></div>
 
-        <div className="relative z-10 max-w-3xl space-y-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-950 text-blue-400 border border-blue-800">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Verificación Pre-Laboratorio</span>
+          <div className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between p-6 border-b border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-700 text-white shadow-md shadow-blue-200 flex items-center justify-center shrink-0">
+                  {(() => {
+                    const ModalIcon = selectedTool.icon;
+                    return <ModalIcon className="w-6 h-6" />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900">{selectedTool.name}</h3>
+                  <p className="text-xs font-semibold text-blue-700">{selectedTool.category}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedToolId(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Checklist de Inicio Rápido
-            </h2>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Marca las casillas conforme completes cada instalación. Estarás 100% listo para ejecutar tu primer lazo de control en el Lab 0.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-            {[
-              { id: "matlab", label: "MATLAB & Simulink instalados con licencia UIS", desc: "Incluye Control System Toolbox" },
-              { id: "arduino", label: "Arduino IDE 2.x configurado", desc: "Con librerías PubSubClient y ArduinoJson" },
-              { id: "drivers", label: "Drivers USB-Serial funcionando", desc: "Puerto COM reconocido sin advertencias" },
-              { id: "mqtt", label: "Credenciales MQTT de HiveMQ listas", desc: "Host, puerto 8883 y usuario activo" },
-            ].map((item) => {
-              const isChecked = checklist[item.id];
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 bg-slate-50/50">
+              {/* Requirements */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                  <ShieldCheck className="w-4 h-4 text-blue-700" />
+                  <span>Requisitos de Sistema:</span>
+                </div>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-600">
+                  {selectedTool.requirements.map((req, i) => (
+                    <li key={i} className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => toggleChecklist(item.id)}
-                  className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
-                    isChecked
-                      ? "bg-green-950/40 border-green-600/60 text-green-300 shadow-sm"
-                      : "bg-slate-800/60 border-slate-700/70 hover:border-slate-600 text-slate-300"
-                  }`}
+              {/* Numbered Steps */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Pasos de Configuración:
+                </h4>
+
+                <div className="space-y-3">
+                  {selectedTool.steps.map((step, idx) => (
+                    <div key={idx} className="bg-white p-3.5 rounded-xl border border-slate-200/70 space-y-2">
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5 font-mono-tech">
+                          {idx + 1}
+                        </span>
+                        <div className="space-y-1 w-full">
+                          <p className="text-xs font-bold text-slate-900">{step.title}</p>
+                          <p className="text-xs text-slate-600 leading-relaxed">{step.description}</p>
+
+                          {step.code && (
+                            <div className="mt-2 p-2.5 rounded-lg bg-slate-900 text-slate-100 text-xs font-mono-tech flex items-center justify-between overflow-x-auto border border-slate-800">
+                              <code>{step.code}</code>
+                              <Terminal className="w-3.5 h-3.5 text-blue-400 ml-2 shrink-0" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-100 bg-white flex flex-col sm:flex-row items-center gap-3">
+              <a
+                href={selectedTool.primaryAction.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-200 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                <span>{selectedTool.primaryAction.label}</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+              </a>
+
+              {selectedTool.docUrl && (
+                <a
+                  href={selectedTool.docUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <div className="mt-0.5">
-                    {isChecked ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-400 fill-green-950" />
-                    ) : (
-                      <Square className="w-5 h-5 text-slate-500" />
-                    )}
-                  </div>
-                  <div>
-                    <p className={`text-xs font-bold ${isChecked ? "text-white line-through decoration-green-500" : "text-slate-200"}`}>
-                      {item.label}
-                    </p>
-                    <p className="text-[11px] text-slate-400 pt-0.5">{item.desc}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Info className="w-4 h-4 text-blue-400" />
-              <span>¿Completaste el checklist? Ya puedes ingresar a los retos de laboratorio.</span>
+                  <span>Documentación</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
+              )}
             </div>
-
-            <Link
-              href="/laboratorios"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 hover:-translate-y-0.5 transition-all"
-            >
-              <span>Ir a Ruta de Laboratorios</span>
-              <CheckCircle2 className="w-4 h-4" />
-            </Link>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

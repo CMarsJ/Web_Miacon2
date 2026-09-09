@@ -1,12 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Outfit, Cormorant_Garamond, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -14,9 +26,14 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+});
+
 export const metadata: Metadata = {
-  title: "Miacon 2.0 - Plataforma Interactiva de Control",
-  description: "Aprende y experimenta con teoría de control automático, simulaciones interactivas y laboratorios prácticos con Miacon 2.0.",
+  title: "Miacon 2.0 - Instrumento de Control",
+  description: "Plataforma de aprendizaje y experimentación de control en lazo cerrado.",
 };
 
 export default function RootLayout({
@@ -25,12 +42,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased">
+    <html lang="es" className="antialiased scroll-smooth">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans min-h-full flex flex-col bg-slate-50 text-slate-900 bg-radial-gradient bg-grid-pattern selection:bg-blue-600 selection:text-white`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans bg-surface text-slate-800 selection:bg-blue-600 selection:text-white min-h-screen`}
       >
         <Navbar />
-        <main className="flex-grow flex flex-col relative z-10">
+        <main className="relative z-10 w-full">
           {children}
         </main>
         <Footer />
