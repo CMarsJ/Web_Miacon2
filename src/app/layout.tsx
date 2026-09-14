@@ -47,7 +47,7 @@ export default function RootLayout({
         className={`${plusJakartaSans.variable} ${outfit.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans bg-surface text-slate-800 selection:bg-blue-600 selection:text-white min-h-screen`}
       >
         <Navbar />
-        <main className="relative z-10 w-full">
+        <main className="relative w-full">
           {children}
         </main>
         <Footer />

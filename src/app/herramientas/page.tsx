@@ -44,7 +44,7 @@ const TOOLS_DATA: SoftwareTool[] = [
   {
     id: "matlab",
     name: "MATLAB",
-    version: "R2024b / R2023b",
+    version: "R2025b / R2024b",
     category: "Cálculo Numérico & Modelado",
     icon: Calculator,
     shortDesc: "Entorno estándar en ingeniería para análisis matemático, matrices y validación de funciones de transferencia.",
@@ -58,12 +58,12 @@ const TOOLS_DATA: SoftwareTool[] = [
     ],
     steps: [
       {
-        title: "Paso 1: Acceso al Portal UIS",
-        description: "Ingresa al portal de software institucional UIS o directamente a MathWorks utilizando tu correo institucional (@uis.edu.co o @correo.uis.edu.co)."
+        title: "Paso 1: Accede a mathworks",
+        description: "Dale a obetener de MATLAB a través de su universidad, accede a mathworks.com/downloads e inicia sesión o registrate utilizando tu correo institucional (@uis.edu.co o @correo.uis.edu.co)."
       },
       {
         title: "Paso 2: Descargar el MATLAB Installer",
-        description: "Accede a mathworks.com/downloads e inicia sesión. Descarga el instalador online oficial para Windows."
+        description: "Accede a mathworks.com/downloads e inicia sesión. Descarga el instalador oficial para Windows."
       },
       {
         title: "Paso 3: Selección de Toolboxes Clave",
@@ -77,7 +77,7 @@ const TOOLS_DATA: SoftwareTool[] = [
     ],
     primaryAction: {
       label: "Descargar en MathWorks",
-      url: "https://www.mathworks.com/downloads",
+      url: "https://la.mathworks.com/products/matlab/student.html",
       isExternal: true
     },
     docUrl: "https://la.mathworks.com/help/matlab/"

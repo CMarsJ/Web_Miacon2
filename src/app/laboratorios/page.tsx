@@ -672,7 +672,7 @@ export default function Laboratorios() {
 
       {/* PASSWORD AUTH MODAL FOR PROFESSORS */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-blue-100 p-7 space-y-6">
             {/* Close Button */}
             <button
