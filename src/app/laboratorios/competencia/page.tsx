@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import mqtt from "mqtt";
 import {
   Activity,
   ArrowLeft,
@@ -111,6 +112,8 @@ function CompetenciaContent() {
 
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [mqttCreds, setMqttCreds] = useState<{ url?: string; username?: string; password?: string } | null>(null);
+  const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null);
   const [passInput, setPassInput] = useState<string>("");
   const [passError, setPassError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -139,19 +142,40 @@ function CompetenciaContent() {
   // Chart Data State
   const [timeSeries, setTimeSeries] = useState<any[]>([]);
   const simStepRef = useRef<number>(0);
-  const internalStates = useRef<Record<string, { y: number; dy: number; integral: number }>>({
-    alfa: { y: 0, dy: 0, integral: 0 },
-    beta: { y: 0, dy: 0, integral: 0 },
-    gamma: { y: 0, dy: 0, integral: 0 },
-    delta: { y: 0, dy: 0, integral: 0 },
+  const latestValues = useRef<Record<string, number>>({
+    alfa: 0,
+    beta: 0,
+    gamma: 0,
+    delta: 0,
   });
+
+  // Fetch Credentials Helper
+  const fetchMqttCredentials = async (password: string) => {
+    try {
+      const res = await fetch("/api/mqtt-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        const creds = await res.json();
+        setMqttCreds(creds);
+        setIsAuthenticated(true);
+        sessionStorage.setItem("miacon_prof_auth", password);
+        return true;
+      }
+    } catch (e) {
+      console.error("Auth error", e);
+    }
+    return false;
+  };
 
   // Check Session Auth on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("miacon_prof_auth");
-      if (stored === "true") {
-        setIsAuthenticated(true);
+      const storedPass = sessionStorage.getItem("miacon_prof_auth");
+      if (storedPass) {
+        fetchMqttCredentials(storedPass);
       }
     }
   }, []);
@@ -163,7 +187,7 @@ function CompetenciaContent() {
       const defaultSp = rawTrack === "control2" ? 1200 : 50;
       setSetpoint(defaultSp);
       setActiveSetpoint(defaultSp);
-      resetSimulation(defaultSp);
+      resetData();
     }
   }, [rawTrack]);
 
@@ -179,8 +203,9 @@ function CompetenciaContent() {
           max: 2500,
           step: 50,
           presets: [600, 1000, 1200, 1800, 2200],
-          description:
-            "Evaluación de respuesta ante escalón en lazo cerrado para actuadores electromecánicos (Motor DC con encoder).",
+          description: "Evaluación de respuesta ante escalón en lazo cerrado para actuadores electromecánicos (Motor DC con encoder).",
+          telemetryTopic: "ViewC2",
+          setpointTopic: "SetpointV"
         };
       case "avanzado":
         return {
@@ -191,8 +216,9 @@ function CompetenciaContent() {
           max: 100,
           step: 1,
           presets: [35, 45, 60, 75, 90],
-          description:
-            "Evaluación simultánea de regulación multivariable en lazo térmico y cinemático.",
+          description: "Evaluación simultánea de regulación multivariable en lazo térmico y cinemático.",
+          telemetryTopic: "ViewT",
+          setpointTopic: "SetpointT"
         };
       case "control1":
       default:
@@ -204,87 +230,30 @@ function CompetenciaContent() {
           max: 95,
           step: 1,
           presets: [30, 45, 55, 70, 85],
-          description:
-            "Evaluación en vivo de tiempo de calentamiento, sobrepaso y estabilidad térmica respecto al setpoint del docente.",
+          description: "Evaluación en vivo de tiempo de calentamiento, sobrepaso y estabilidad térmica respecto al setpoint del docente.",
+          telemetryTopic: "ViewC1",
+          setpointTopic: "SetpointT"
         };
     }
   }, [activeTrack]);
 
-  // Reset Simulation
-  const resetSimulation = (sp = activeSetpoint) => {
+  // Reset Data
+  const resetData = () => {
     simStepRef.current = 0;
-    internalStates.current = {
-      alfa: { y: 0, dy: 0, integral: 0 },
-      beta: { y: 0, dy: 0, integral: 0 },
-      gamma: { y: 0, dy: 0, integral: 0 },
-      delta: { y: 0, dy: 0, integral: 0 },
-    };
-
-    // Pre-generate initial 20 points
-    const initialPoints = [];
-    for (let i = 0; i < 20; i++) {
-      const t = (i * 0.2).toFixed(1);
-      const point: any = { time: `${t}s`, setpoint: sp };
-      INITIAL_TEAMS.forEach((team) => {
-        const sim = simulateStep(team, sp, 0.2, internalStates.current[team.id]);
-        internalStates.current[team.id] = sim;
-        point[team.id] = Number(sim.y.toFixed(2));
-      });
-      initialPoints.push(point);
-    }
-    simStepRef.current = 20;
-    setTimeSeries(initialPoints);
+    latestValues.current = { alfa: 0, beta: 0, gamma: 0, delta: 0 };
+    setTimeSeries([]);
   };
 
-  // Helper physics/control step simulator
-  const simulateStep = (
-    team: TeamConfig,
-    target: number,
-    dt: number,
-    state: { y: number; dy: number; integral: number }
-  ) => {
-    const error = target - state.y;
-    const newIntegral = state.integral + error * dt;
-    const derivative = -state.dy;
-
-    // Second order dynamic model with noise
-    const wn = team.omega;
-    const z = team.zeta;
-    const noise = (Math.random() - 0.5) * (target * 0.015);
-    const ddy =
-      wn * wn * (error + team.bias * target) - 2 * z * wn * state.dy + (Math.random() - 0.5) * 0.2;
-
-    const newDy = state.dy + ddy * dt;
-    const newY = Math.max(0, state.y + newDy * dt + noise);
-
-    return {
-      y: newY,
-      dy: newDy,
-      integral: newIntegral,
-    };
-  };
-
-  // Real-time telemetry interval
+  // Real-time telemetry interval (Chart Update)
   useEffect(() => {
     if (!isAuthenticated || !isStreaming) return;
 
     const interval = setInterval(() => {
       simStepRef.current += 1;
       const t = (simStepRef.current * 0.2).toFixed(1);
-      const newPoint: any = { time: `${t}s`, setpoint: activeSetpoint };
-
-      INITIAL_TEAMS.forEach((team) => {
-        const nextState = simulateStep(
-          team,
-          activeSetpoint,
-          0.2,
-          internalStates.current[team.id]
-        );
-        internalStates.current[team.id] = nextState;
-        newPoint[team.id] = Number(nextState.y.toFixed(2));
-      });
-
+      
       setTimeSeries((prev) => {
+        const newPoint: any = { time: `${t}s`, setpoint: activeSetpoint, ...latestValues.current };
         const next = [...prev, newPoint];
         if (next.length > 80) return next.slice(next.length - 80);
         return next;
@@ -294,16 +263,52 @@ function CompetenciaContent() {
     return () => clearInterval(interval);
   }, [isAuthenticated, isStreaming, activeSetpoint]);
 
-  // Initial population
+  // MQTT Connection Management
   useEffect(() => {
-    if (isAuthenticated && timeSeries.length === 0) {
-      resetSimulation();
-    }
-  }, [isAuthenticated]);
+    if (!mqttCreds?.url) return;
+
+    const client = mqtt.connect(mqttCreds.url, {
+      username: mqttCreds.username,
+      password: mqttCreds.password,
+    });
+
+    client.on("connect", () => {
+      console.log("MQTT Connected");
+      setMqttClient(client);
+      client.subscribe([trackInfo.telemetryTopic]);
+    });
+
+    client.on("message", (topic, message) => {
+      if (!isStreaming) return;
+      if (topic === trackInfo.telemetryTopic) {
+        try {
+          const data = JSON.parse(message.toString());
+          const equipo = data.equipo?.toLowerCase();
+          // Find the value, prioritizing velocity for control2, else temperature or generic valor
+          const value = data.velocidad ?? data.temperatura ?? data.valor ?? 0;
+          if (equipo && ["alfa", "beta", "gamma", "delta"].includes(equipo)) {
+            latestValues.current[equipo] = value;
+          }
+        } catch (e) {
+          console.error("Invalid JSON from MQTT", e);
+        }
+      }
+    });
+
+    return () => {
+      client.end();
+      setMqttClient(null);
+    };
+  }, [mqttCreds, trackInfo.telemetryTopic, isStreaming]);
 
   // Handle Setpoint Send
   const handleSendSetpoint = () => {
     setIsSendingSetpoint(true);
+    
+    if (mqttClient && mqttClient.connected) {
+      mqttClient.publish(trackInfo.setpointTopic, setpoint.toString());
+    }
+
     setTimeout(() => {
       setActiveSetpoint(Number(setpoint));
       setIsSendingSetpoint(false);
@@ -313,14 +318,13 @@ function CompetenciaContent() {
   };
 
   // Handle Auth Login
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passInput.trim() === "Miacon2") {
-      sessionStorage.setItem("miacon_prof_auth", "true");
-      setIsAuthenticated(true);
+    const success = await fetchMqttCredentials(passInput.trim());
+    if (success) {
       setPassError("");
     } else {
-      setPassError("Contraseña incorrecta. Por favor intenta de nuevo.");
+      setPassError("Contraseña incorrecta o error de servidor.");
     }
   };
 
