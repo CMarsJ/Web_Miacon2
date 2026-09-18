@@ -149,6 +149,9 @@ function CompetenciaContent() {
     delta: 0,
   });
 
+  // Connection Debug State
+  const [mqttStatus, setMqttStatus] = useState<string>("Desconectado");
+
   // Fetch Credentials Helper
   const fetchMqttCredentials = async (password: string) => {
     try {
@@ -265,8 +268,12 @@ function CompetenciaContent() {
 
   // MQTT Connection Management
   useEffect(() => {
-    if (!mqttCreds?.url) return;
+    if (!mqttCreds?.url) {
+      setMqttStatus("Esperando credenciales...");
+      return;
+    }
 
+    setMqttStatus(`Conectando a ${mqttCreds.url}...`);
     const client = mqtt.connect(mqttCreds.url, {
       username: mqttCreds.username,
       password: mqttCreds.password,
@@ -274,8 +281,22 @@ function CompetenciaContent() {
 
     client.on("connect", () => {
       console.log("MQTT Connected");
+      setMqttStatus("Conectado");
       setMqttClient(client);
       client.subscribe([trackInfo.telemetryTopic]);
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT Error:", err);
+      setMqttStatus(`Error: ${err.message}`);
+    });
+
+    client.on("reconnect", () => {
+      setMqttStatus("Reconectando...");
+    });
+
+    client.on("offline", () => {
+      setMqttStatus("Fuera de línea");
     });
 
     client.on("message", (topic, message) => {
@@ -647,7 +668,7 @@ function CompetenciaContent() {
             )}
 
             <button
-              onClick={() => resetSimulation()}
+              onClick={() => resetData()}
               className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors cursor-pointer"
               title="Reiniciar historial de datos"
             >
@@ -657,17 +678,19 @@ function CompetenciaContent() {
             {/* Connection Status Pill */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-mono">
               <span className="relative flex h-2.5 w-2.5">
-                {isStreaming ? (
+                {mqttStatus === "Conectado" ? (
                   <>
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </>
+                ) : mqttStatus.includes("Error") ? (
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                 ) : (
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                 )}
               </span>
               <span className="text-[11px] font-semibold text-slate-300">
-                {isStreaming ? "MQTT Broker: Recibiendo" : "Flujo en Pausa"}
+                MQTT: {mqttStatus}
               </span>
             </div>
           </div>
