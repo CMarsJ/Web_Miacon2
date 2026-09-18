@@ -70,7 +70,7 @@ export default function Lab0() {
   const progressPercent = Math.round((completedSteps / totalSteps) * 100);
 
   return (
-    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-32 pb-10 space-y-8">
       {/* Back Link */}
       <Link
         href="/laboratorios"

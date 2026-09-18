@@ -9,15 +9,12 @@ import {
   ArrowLeft,
   Award,
   Check,
-  ChevronRight,
   Clock,
   Cpu,
   Eye,
   EyeOff,
   Flame,
   Gauge,
-  KeyRound,
-  Lock,
   Medal,
   Pause,
   Play,
@@ -285,8 +282,27 @@ function CompetenciaContent() {
       if (topic === trackInfo.telemetryTopic) {
         try {
           const data = JSON.parse(message.toString());
+          // -------------------------------------------------------
+          // FORMATO ESPERADO DEL MENSAJE MQTT (JSON):
+          //
+          // Para Control 1 (Térmico) — Topic: "ViewC1"
+          //   { "equipo": "Alfa", "temperatura": 52.3 }
+          //
+          // Para Control 2 (Velocidad) — Topic: "ViewC2"
+          //   { "equipo": "Beta", "velocidad": 1450 }
+          //
+          // Formato genérico (cualquier track):
+          //   { "equipo": "Gamma", "valor": 67.8 }
+          //
+          // Campos:
+          //   equipo      (string, requerido): "Alfa" | "Beta" | "Gamma" | "Delta"
+          //   temperatura (number, opcional):  valor en °C (prioridad en Control 1)
+          //   velocidad   (number, opcional):  valor en RPM (prioridad en Control 2)
+          //   valor       (number, opcional):  valor genérico (fallback)
+          //
+          // Prioridad de lectura: velocidad > temperatura > valor
+          // -------------------------------------------------------
           const equipo = data.equipo?.toLowerCase();
-          // Find the value, prioritizing velocity for control2, else temperature or generic valor
           const value = data.velocidad ?? data.temperatura ?? data.valor ?? 0;
           if (equipo && ["alfa", "beta", "gamma", "delta"].includes(equipo)) {
             latestValues.current[equipo] = value;
@@ -410,7 +426,7 @@ function CompetenciaContent() {
   // RENDER: FULL PROFESSOR COMPETITION DASHBOARD
   // -------------------------------------------------------------
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-10 space-y-10">
+    <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 lg:px-10 xl:px-12 pt-32 pb-10 space-y-10">
       {/* TOP NAVIGATION & HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div className="space-y-1">
