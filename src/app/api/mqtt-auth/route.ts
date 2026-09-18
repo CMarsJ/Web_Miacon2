@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function GET() {
   try {
-    const body = await req.json();
-    if (body.password !== "Miacon2") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Return the environment variables from Vercel
+    // Return the MQTT credentials from Vercel environment variables
     return NextResponse.json({
       url: process.env.MQTT_BROKER_URL || "",
       username: process.env.MQTT_USERNAME || "",

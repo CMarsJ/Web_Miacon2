@@ -301,7 +301,7 @@ export default function Laboratorios() {
     e.preventDefault();
     if (passwordInput.trim() === "Miacon2") {
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("miacon_prof_auth", "true");
+        sessionStorage.setItem("miacon_prof_gate", passwordInput.trim());
       }
       setIsModalOpen(false);
       router.push(`/laboratorios/competencia?track=${selectedTrack}`);

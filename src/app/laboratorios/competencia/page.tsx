@@ -110,13 +110,9 @@ function CompetenciaContent() {
   const rawTrack = searchParams.get("track") || "control1";
   const [activeTrack, setActiveTrack] = useState<string>(rawTrack);
 
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  // MQTT Credentials & Connection State
   const [mqttCreds, setMqttCreds] = useState<{ url?: string; username?: string; password?: string } | null>(null);
   const [mqttClient, setMqttClient] = useState<mqtt.MqttClient | null>(null);
-  const [passInput, setPassInput] = useState<string>("");
-  const [passError, setPassError] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   // Professor Control Parameters
   const [setpoint, setSetpoint] = useState<number>(() => {
@@ -152,35 +148,20 @@ function CompetenciaContent() {
   // Connection Debug State
   const [mqttStatus, setMqttStatus] = useState<string>("Desconectado");
 
-  // Fetch Credentials Helper
-  const fetchMqttCredentials = async (password: string) => {
-    try {
-      const res = await fetch("/api/mqtt-auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      if (res.ok) {
-        const creds = await res.json();
-        setMqttCreds(creds);
-        setIsAuthenticated(true);
-        sessionStorage.setItem("miacon_prof_auth", password);
-        return true;
-      }
-    } catch (e) {
-      console.error("Auth error", e);
-    }
-    return false;
-  };
-
-  // Check Session Auth on mount
+  // Auto-fetch MQTT credentials from Vercel environment variables on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedPass = sessionStorage.getItem("miacon_prof_auth");
-      if (storedPass) {
-        fetchMqttCredentials(storedPass);
+    const fetchMqttCredentials = async () => {
+      try {
+        const res = await fetch("/api/mqtt-auth");
+        if (res.ok) {
+          const creds = await res.json();
+          setMqttCreds(creds);
+        }
+      } catch (e) {
+        console.error("Error fetching MQTT credentials", e);
       }
-    }
+    };
+    fetchMqttCredentials();
   }, []);
 
   // Update track from searchParams
@@ -249,7 +230,7 @@ function CompetenciaContent() {
 
   // Real-time telemetry interval (Chart Update)
   useEffect(() => {
-    if (!isAuthenticated || !isStreaming) return;
+    if (!isStreaming) return;
 
     const interval = setInterval(() => {
       simStepRef.current += 1;
@@ -264,7 +245,7 @@ function CompetenciaContent() {
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, isStreaming, activeSetpoint]);
+  }, [isStreaming, activeSetpoint]);
 
   // MQTT Connection Management
   useEffect(() => {
@@ -338,16 +319,7 @@ function CompetenciaContent() {
     }, 400);
   };
 
-  // Handle Auth Login
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await fetchMqttCredentials(passInput.trim());
-    if (success) {
-      setPassError("");
-    } else {
-      setPassError("Contraseña incorrecta o error de servidor.");
-    }
-  };
+
 
   // Toggle single team visibility
   const toggleTeam = (teamId: string) => {
@@ -433,79 +405,6 @@ function CompetenciaContent() {
       settling: { team: bestSettling, value: "2.8s", label: "Mejor Asentamiento (ts)" },
     };
   }, [teamScores]);
-
-  // -------------------------------------------------------------
-  // RENDER: PASSWORD LOCK SCREEN IF NOT AUTHENTICATED
-  // -------------------------------------------------------------
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-blue-100 shadow-2xl space-y-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
-          <Lock className="w-8 h-8" />
-        </div>
-
-        <div className="space-y-2">
-          <h2 className="text-2xl font-black text-slate-900">
-            Panel Exclusivo de Profesores
-          </h2>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Ingresa la contraseña de docente para acceder al panel de competencia, transmisión de setpoint y visualización de telemetría MQTT.
-          </p>
-        </div>
-
-        <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Contraseña
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={passInput}
-                onChange={(e) => {
-                  setPassInput(e.target.value);
-                  setPassError("");
-                }}
-                placeholder="Ingresa clave docente..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all pr-10"
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {passError && (
-              <p className="text-xs text-rose-600 font-semibold mt-1.5">
-                {passError}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold shadow-md shadow-blue-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Desbloquear Módulo Docente</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </form>
-
-        <div className="pt-2 border-t border-slate-100">
-          <Link
-            href="/laboratorios"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Volver a la Ruta de Laboratorios</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   // -------------------------------------------------------------
   // RENDER: FULL PROFESSOR COMPETITION DASHBOARD
