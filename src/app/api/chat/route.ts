@@ -28,19 +28,20 @@ export async function POST(request: Request) {
     }
 
     const lastUserMessage = messages[messages.length - 1]?.content?.trim() || "";
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
 
     // Upgrade deprecated gemini-2.5-* models to gemini-3.8-flash per current Gemini API standards
-    const rawModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-    const model = rawModel.startsWith("gemini-2.") || rawModel.startsWith("gemini-1.")
-      ? "gemini-3.8-flash"
-      : rawModel;
+    const rawModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
+    const primaryModel =
+      rawModel.startsWith("gemini-2.") || rawModel.startsWith("gemini-1.")
+        ? "gemini-3.8-flash"
+        : rawModel;
 
     // Modo demo / aviso cuando aún no se ha configurado GEMINI_API_KEY en Vercel o .env.local
     if (!apiKey) {
       return NextResponse.json({
         reply:
-          "Modo de vista previa activo (GEMINI_API_KEY aún no detectada en las variables de entorno). Una vez configures tu clave de Google AI Studio en Vercel, responderé en tiempo real a tu consulta sobre el equipo MIACON 2.0, diagnóstico de fallos en planta y conceptos de control PID.",
+          "Modo de vista previa activo (GEMINI_API_KEY aún no detectada en las variables de entorno del proyecto). Una vez configures GEMINI_API_KEY en Vercel o en tu archivo .env.local, responderé en tiempo real a tu consulta sobre el equipo MIACON 2.0, diagnóstico de fallos en planta y conceptos de control PID.",
         mode: "demo",
       });
     }
@@ -56,12 +57,44 @@ export async function POST(request: Request) {
             .join("\n\n")
         : lastUserMessage;
 
-    const interaction = await client.interactions.create({
-      model,
-      input: formattedInput,
-      system_instruction: SYSTEM_INSTRUCTION,
-      ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
-    });
+    // Lista de modelos con respaldo automático en caso de alta demanda (503 / 429)
+    const candidateModels = Array.from(
+      new Set([primaryModel, "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"])
+    );
+
+    let interaction: any = null;
+    let lastError: any = null;
+
+    for (const candidateModel of candidateModels) {
+      try {
+        interaction = await client.interactions.create({
+          model: candidateModel,
+          input: formattedInput,
+          system_instruction: SYSTEM_INSTRUCTION,
+          ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
+        });
+        break;
+      } catch (err: any) {
+        lastError = err;
+        const msg = String(err?.message || "");
+        const isHighDemand =
+          msg.includes("503") ||
+          msg.includes("429") ||
+          msg.toLowerCase().includes("high demand") ||
+          msg.toLowerCase().includes("overloaded");
+
+        if (!isHighDemand) {
+          throw err;
+        }
+        console.warn(
+          `Modelo ${candidateModel} con alta demanda (503/429), intentando modelo de respaldo...`
+        );
+      }
+    }
+
+    if (!interaction) {
+      throw lastError || new Error("El servicio de IA está experimentando alta demanda temporal.");
+    }
 
     const cleanReply = (interaction.output_text || "No se pudo obtener una respuesta del tutor en este momento.")
       .replace(/```[\s\S]*?```/g, "")
