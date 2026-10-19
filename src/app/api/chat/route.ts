@@ -1,18 +1,32 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs";
+import path from "path";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-const SYSTEM_INSTRUCTION = `Eres el Tutor Técnico de MIACON 2.0, un asistente especializado en resolución de dudas conceptuales y diagnóstico de fallos para estudiantes de sistemas de control automático en la plataforma MIACON 2.0.
+// Cargar la base de conocimiento oficial desde Guias/conocimiento.txt con fallback
+function loadSystemInstruction(): string {
+  try {
+    const filePath = path.join(process.cwd(), "Guias", "conocimiento.txt");
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      return fileContent.trim();
+    }
+  } catch (err) {
+    console.error("No se pudo leer Guias/conocimiento.txt:", err);
+  }
 
-REGLAS ESTRICTAS DE RESPUESTA:
-1. Tu único propósito es responder dudas conceptuales (control PID, lazo cerrado, sensores, actuadores, estabilidad, sintonización) y orientar en el diagnóstico de fallos o problemas comunes durante las prácticas en el módulo MIACON 2.0 o en su configuración con MATLAB/Simulink y comunicación MQTT.
-2. NO generes ni escribas bloques de código (ni scripts de MATLAB, ni código Python/C++/Arduino), ni generes imágenes, diagramas ni tablas complejas.
-3. Responde SIEMPRE en texto plano claro, directo, conciso y conversacional (máximo 2 o 3 párrafos breves por respuesta). Evita usar sintaxis Markdown como bloques de código (\`\`\`), encabezados (#) o formato innecesario.
-4. Si el usuario te pide que le hagas un código o script completo, indícale amablemente que tu función es guiarlo conceptualmente y ayudarle a diagnosticar fallos paso a paso, explicándole la lógica con palabras sencillas.`;
+  // Fallback seguro en caso de que el archivo no esté disponible
+  return `ROL Y PERSONALIDAD:
+- Eres el Asistente Virtual Especializado del Proyecto Miacon y Sistemas de Control.
+- Tono: Extremadamente amable, paciente, empático, profesional y educativo.
+- Objetivo: Guiar al usuario con explicaciones claras, detalladas y fáciles de entender, adaptándose a su nivel técnico.
+- LÍMITES ESTRICTOS: SOLO TEXTO, LISTAS Y FÓRMULAS LATEX ($...$ o $$...$$). PROHIBIDO GENERAR CÓDIGO (nada de Python, C++, MATLAB, etc.) ni imágenes o diagramas visuales. Si piden código, declina con cortesía y explica la teoría o lógica algorítmica con palabras.`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +44,7 @@ export async function POST(request: Request) {
     const lastUserMessage = messages[messages.length - 1]?.content?.trim() || "";
     const apiKey = process.env.GEMINI_API_KEY?.trim();
 
-    // Upgrade deprecated gemini-2.5-* models to gemini-3.8-flash per current Gemini API standards
+    // Actualizar modelos obsoletos según los estándares actuales de la API de Gemini
     const rawModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
     const primaryModel =
       rawModel.startsWith("gemini-2.") || rawModel.startsWith("gemini-1.")
@@ -41,23 +55,23 @@ export async function POST(request: Request) {
     if (!apiKey) {
       return NextResponse.json({
         reply:
-          "Modo de vista previa activo (GEMINI_API_KEY aún no detectada en las variables de entorno del proyecto). Una vez configures GEMINI_API_KEY en Vercel o en tu archivo .env.local, responderé en tiempo real a tu consulta sobre el equipo MIACON 2.0, diagnóstico de fallos en planta y conceptos de control PID.",
+          "¡Hola! Soy tu Asistente Virtual del Proyecto Miacon. Modo de vista previa activo (GEMINI_API_KEY aún no detectada en las variables de entorno del proyecto). En cuanto agregues tu clave en Vercel o en tu archivo .env.local, responderé en tiempo real según el manual oficial de Miacon y teoría de control automático.",
         mode: "demo",
       });
     }
 
     const client = new GoogleGenAI({ apiKey });
+    const systemInstruction = loadSystemInstruction();
 
-    // Si aún no hay previousInteractionId pero hay varios mensajes en la sesión,
-    // condensamos el hilo de la sesión activa para mantener el contexto.
+    // Mantener el hilo de conversación en la sesión activa
     const formattedInput =
       !previousInteractionId && messages.length > 1
         ? messages
-            .map((m) => `${m.role === "user" ? "Estudiante" : "Tutor"}: ${m.content}`)
+            .map((m) => `${m.role === "user" ? "Usuario" : "Asistente Miacon"}: ${m.content}`)
             .join("\n\n")
         : lastUserMessage;
 
-    // Lista de modelos con respaldo automático en caso de alta demanda (503 / 429)
+    // Modelos con respaldo ante picos de demanda (503 / 429)
     const candidateModels = Array.from(
       new Set([primaryModel, "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"])
     );
@@ -70,7 +84,7 @@ export async function POST(request: Request) {
         interaction = await client.interactions.create({
           model: candidateModel,
           input: formattedInput,
-          system_instruction: SYSTEM_INSTRUCTION,
+          system_instruction: systemInstruction,
           ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
         });
         break;
@@ -87,7 +101,7 @@ export async function POST(request: Request) {
           throw err;
         }
         console.warn(
-          `Modelo ${candidateModel} con alta demanda (503/429), intentando modelo de respaldo...`
+          `Modelo ${candidateModel} con alta demanda (503/429), reintentando con modelo de respaldo...`
         );
       }
     }
@@ -96,9 +110,9 @@ export async function POST(request: Request) {
       throw lastError || new Error("El servicio de IA está experimentando alta demanda temporal.");
     }
 
-    const cleanReply = (interaction.output_text || "No se pudo obtener una respuesta del tutor en este momento.")
+    // Limpiar bloques de código que violen las directivas de formato
+    const cleanReply = (interaction.output_text || "No se pudo obtener una respuesta del asistente en este momento.")
       .replace(/```[\s\S]*?```/g, "")
-      .replace(/[*#`_~]/g, "")
       .trim();
 
     return NextResponse.json({

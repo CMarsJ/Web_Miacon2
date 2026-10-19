@@ -12,6 +12,7 @@ import {
   Wrench,
   Activity,
 } from "lucide-react";
+import FormattedMathText from "@/components/chat/FormattedMathText";
 
 interface Message {
   id: string;
@@ -299,7 +300,7 @@ export default function TutorPage() {
                       )}
                     </div>
 
-                    {/* Burbuja de texto plano */}
+                    {/* Burbuja de texto */}
                     <div
                       className={`max-w-[82%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-2xs ${
                         isUser
@@ -309,9 +310,13 @@ export default function TutorPage() {
                           : "bg-white text-slate-800 border border-slate-200/90 rounded-tl-xs"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap break-words font-sans">
-                        {msg.content}
-                      </p>
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap break-words font-sans">
+                          {msg.content}
+                        </p>
+                      ) : (
+                        <FormattedMathText content={msg.content} />
+                      )}
                       <div
                         className={`mt-1.5 flex items-center justify-end gap-2 text-[10px] font-mono-data ${
                           isUser ? "text-blue-100" : "text-slate-400"
