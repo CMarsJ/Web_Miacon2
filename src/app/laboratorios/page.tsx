@@ -104,19 +104,6 @@ export default function Laboratorios() {
           tags: ["🛠️ Hardware", "⚡ Termistor", "💻 Arduino IDE"]
         },
         {
-          id: 1,
-          title: "Modelado y Simulación en MATLAB",
-          subtitle: "Identificación de Función de Transferencia Térmica",
-          description:
-            "Adquisición de la curva de calentamiento en lazo abierto, cálculo de la constante de tiempo (tau) y diseño del controlador en Simulink.",
-          status: "locked",
-          time: "60 min",
-          difficulty: "Básico",
-          path: "#",
-          badge: "Próximamente",
-          tags: ["💻 MATLAB", "📊 Simulink", "📈 Curva Reacción"]
-        },
-        {
           id: 2,
           title: "Control de Temperatura en Tiempo Real",
           subtitle: "Implementación PID y Rechazo de Perturbaciones",
@@ -323,6 +310,52 @@ export default function Laboratorios() {
         </p>
       </div>
 
+      {/* FUNDAMENTOS: base común de todas las rutas */}
+      {(() => {
+        const isFundamentosCompleted = isCompleted("fundamentos", 1) || isCompleted("control1", 1);
+        return (
+          <section
+            aria-labelledby="fundamentos-title"
+            className={`rounded-3xl border-2 transition-all p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 ${
+              isFundamentosCompleted
+                ? "border-emerald-300 bg-emerald-50/40 shadow-sm"
+                : "border-blue-200 bg-white"
+            }`}
+          >
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                  Fundamentos • Recomendado antes de cualquier ruta
+                </span>
+                {isFundamentosCompleted && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    <Check className="w-3.5 h-3.5" /> Práctica 1 Completada
+                  </span>
+                )}
+              </div>
+              <h2 id="fundamentos-title" className="text-xl font-black text-slate-900">
+                Prácticas básicas con las herramientas
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Aprende a conectar la ESP32 con MATLAB y Simulink. Es la base para las rutas de control de temperatura y de velocidad y posición.
+              </p>
+            </div>
+            <Link
+              href="/laboratorios/lab1"
+              className={`shrink-0 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-bold px-5 py-3 transition-colors ${
+                isFundamentosCompleted
+                  ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm"
+                  : "bg-blue-700 hover:bg-blue-800 text-white shadow-sm"
+              }`}
+            >
+              {isFundamentosCompleted
+                ? "✓ Repasar Práctica 1 (Completada)"
+                : "Iniciar Práctica 1: ESP32 con MATLAB y Simulink"}
+            </Link>
+          </section>
+        );
+      })()}
+
       {/* 3 TRACK SELECTOR CARDS */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -366,7 +399,7 @@ export default function Laboratorios() {
               Enfocado en sistemas térmicos, adquisición de temperatura, modelado en MATLAB y competencia de regulación.
             </p>
             <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-[11px] font-medium text-slate-500">
-              <span>4 Módulos en total</span>
+              <span>3 Módulos en total</span>
               <span className={`font-bold flex items-center gap-1 ${selectedTrack === "control1" ? "text-blue-700" : "text-slate-400"}`}>
                 {selectedTrack === "control1" ? "✓ Seleccionado" : "Seleccionar"}
               </span>

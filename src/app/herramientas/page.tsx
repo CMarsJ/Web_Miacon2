@@ -185,11 +185,11 @@ const TOOLS_DATA: SoftwareTool[] = [
       }
     ],
     primaryAction: {
-      label: "Descargar Driver CH340",
-      url: "http://www.wch-ic.com/downloads/CH341SER_EXE.html",
+      label: "Ver Tutorial en YouTube",
+      url: "https://www.youtube.com/watch?v=Hcj1CokUa68&t=1s",
       isExternal: true
     },
-    docUrl: "https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers"
+    docUrl: "https://www.youtube.com/watch?v=Hcj1CokUa68&t=1s"
   },
   {
     id: "mqtt",

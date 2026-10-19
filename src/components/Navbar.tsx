@@ -95,6 +95,16 @@ export default function Navbar() {
           </Link>
 
           <Link
+            href="/tutor"
+            className={`px-3 sm:px-4 py-2 rounded-full text-sm font-medium transition-colors ${isActive("/tutor")
+              ? "bg-slate-100 text-navy font-semibold"
+              : "text-text-secondary hover:text-navy hover:bg-slate-50"
+              }`}
+          >
+            Tutor
+          </Link>
+
+          <Link
             href="/laboratorios"
             className="btn-magnetic px-5 sm:px-6 py-2.5 rounded-full text-sm font-medium ml-1 sm:ml-2 shadow-sm"
           >

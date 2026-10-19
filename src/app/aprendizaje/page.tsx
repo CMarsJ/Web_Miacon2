@@ -8,6 +8,7 @@ import {
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
+import { OpenLoopInteractiveDiagram, ClosedLoopInteractiveDiagram } from "@/components/teoria/ControlLoopDiagrams";
 
 export default function Aprendizaje() {
   const [activeTab, setActiveTab] = useState<number>(1);
@@ -223,71 +224,40 @@ export default function Aprendizaje() {
               <p className="text-slate-600 mt-2">Una vez definidas las variables, esta sección abarca cómo interactúa el sistema con la información que fluye a través de él.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-              <div className="border-2 border-slate-200 rounded-3xl p-6 sm:p-8 bg-white relative overflow-hidden group hover:border-amber-400 transition-colors flex flex-col">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-                <h3 className="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-                  <ArrowRight className="text-amber-500" /> Lazo Abierto
-                </h3>
-                <p className="text-slate-600 leading-relaxed flex-1">
-                  El controlador actúa de forma secuencial o calculada sin recibir información de retorno. <strong>Es ciego a la salida;</strong> no hay sensores midiendo si se alcanzó el setpoint. No corrige sus propios errores frente a perturbaciones.
-                </p>
-                {/* Lazo Abierto Diagram */}
-                <div className="mt-6 flex items-center justify-between text-[10px] sm:text-xs font-bold text-center w-full bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100">
-                  <div className="flex flex-col items-center w-1/4">
-                    <div className="bg-slate-200 p-2 rounded-lg text-slate-700 w-full shadow-sm">Setpoint</div>
-                  </div>
-                  <ArrowRight className="text-slate-400 w-4 h-4 mx-1" />
-                  <div className="flex flex-col items-center w-1/4">
-                    <div className="bg-amber-100 p-2 rounded-lg text-amber-800 border border-amber-200 w-full shadow-sm">Control</div>
-                  </div>
-                  <ArrowRight className="text-slate-400 w-4 h-4 mx-1" />
-                  <div className="flex flex-col items-center w-1/4">
-                    <div className="bg-blue-100 p-2 rounded-lg text-blue-800 border border-blue-200 w-full shadow-sm">Planta</div>
-                  </div>
-                  <ArrowRight className="text-slate-400 w-4 h-4 mx-1" />
-                  <div className="flex flex-col items-center w-1/4">
-                    <div className="bg-slate-200 p-2 rounded-lg text-slate-700 w-full shadow-sm">Salida</div>
-                  </div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-6">
+              {/* Tarjeta Lazo Abierto */}
+              <div className="border-2 border-slate-200 rounded-3xl p-6 sm:p-8 bg-white relative overflow-hidden group hover:border-amber-400 transition-colors flex flex-col gap-5">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-amber-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-2 flex items-center gap-2">
+                    <ArrowRight className="text-amber-500 w-5 h-5" /> Lazo Abierto (Open Loop)
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    El controlador actúa de forma directa sin recibir información de retorno. <strong>Es ciego a la salida:</strong> no hay sensores midiendo si se alcanzó el setpoint ni compensación ante perturbaciones externas.
+                  </p>
+                </div>
+
+                {/* Diagrama Animado Lazo Abierto */}
+                <div className="mt-auto pt-2">
+                  <OpenLoopInteractiveDiagram />
                 </div>
               </div>
 
-              <div className="border-2 border-slate-200 rounded-3xl p-6 sm:p-8 bg-white relative overflow-hidden group hover:border-blue-600 transition-colors flex flex-col">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
-                <h3 className="text-xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-                  <RotateCcw className="text-blue-600" /> Lazo Cerrado (Feedback)
-                </h3>
-                <p className="text-slate-600 leading-relaxed flex-1">
-                  Incorpora realimentación. La salida se mide y se compara continuamente con el setpoint para generar una señal de error. Esto permite al sistema tomar decisiones autónomas y corregir desviaciones.
-                </p>
-                {/* Lazo Cerrado Diagram */}
-                <div className="mt-6 flex flex-col gap-2 text-[10px] sm:text-xs font-bold text-center w-full bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 relative">
-                  <div className="flex items-center justify-between w-full relative z-10">
-                    <div className="flex flex-col items-center w-1/5">
-                      <div className="bg-slate-200 p-2 rounded-lg text-slate-700 w-full shadow-sm">+ Ref</div>
-                    </div>
-                    <div className="w-1/5 flex justify-center text-rose-500 relative">
-                      <span className="absolute -top-4 text-[9px] bg-rose-100 text-rose-700 px-1 rounded">Error</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col items-center w-1/5">
-                      <div className="bg-emerald-100 p-2 rounded-lg text-emerald-800 border border-emerald-200 w-full z-10 shadow-sm">Control</div>
-                    </div>
-                    <ArrowRight className="text-slate-400 w-4 h-4 mx-1" />
-                    <div className="flex flex-col items-center w-1/5">
-                      <div className="bg-blue-100 p-2 rounded-lg text-blue-800 border border-blue-200 w-full z-10 shadow-sm">Planta</div>
-                    </div>
-                    <ArrowRight className="text-slate-400 w-4 h-4 mx-1" />
-                    <div className="flex flex-col items-center w-1/5">
-                      <div className="bg-slate-200 p-2 rounded-lg text-slate-700 w-full shadow-sm">Salida</div>
-                    </div>
-                  </div>
-                  {/* Feedback path */}
-                  <div className="w-full flex justify-end pr-[10%]">
-                    <div className="h-6 w-[75%] border-b-2 border-l-2 border-r-2 border-slate-300 rounded-b-lg border-dashed flex justify-center items-end pb-1 relative">
-                      <span className="text-slate-500 bg-slate-50 px-2 absolute -bottom-2 text-[9px]">Sensor (Feedback)</span>
-                    </div>
-                  </div>
+              {/* Tarjeta Lazo Cerrado */}
+              <div className="border-2 border-slate-200 rounded-3xl p-6 sm:p-8 bg-white relative overflow-hidden group hover:border-blue-600 transition-colors flex flex-col gap-5">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-blue-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 mb-2 flex items-center gap-2">
+                    <RotateCcw className="text-blue-600 w-5 h-5" /> Lazo Cerrado (Closed Loop / Feedback)
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Incorpora realimentación mediante sensores. La salida se mide y se compara continuamente con el setpoint en un nodo sumador para calcular el error <span className="font-mono font-bold text-rose-600">e(t)</span>, permitiendo corregir perturbaciones automáticamente.
+                  </p>
+                </div>
+
+                {/* Diagrama Animado Lazo Cerrado */}
+                <div className="mt-auto pt-2">
+                  <ClosedLoopInteractiveDiagram />
                 </div>
               </div>
             </div>

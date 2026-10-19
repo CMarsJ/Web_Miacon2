@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Cpu, MousePointer2, Activity, HardDrive, Terminal } from "lucide-react";
 import miaconImg from "../../public/miacon.png";
+import { CircuitAssemblyGraphic, AntennaTransmissionGraphic } from "@/components/home/HomeFeatureGraphics";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -426,12 +427,8 @@ function ArchiveSection() {
               <h2 className="text-5xl md:text-7xl font-outfit font-bold text-navy mb-6">Hardware<br /><span className="font-space-tech text-primary">Abierto y Replicable</span></h2>
               <p className="text-lg text-text-secondary max-w-md">Estructuras impresas en 3D, actuadores de grado industrial y microcontroladores accesibles. Diseñado para que construyas tu propio laboratorio desde cero.</p>
             </div>
-            <div className="h-[400px] flex items-center justify-center relative">
-              <div className="w-64 h-64 border-[4px] border-primary rounded-full flex items-center justify-center relative animate-[spin_10s_linear_infinite]">
-                <div className="absolute w-[120%] h-[4px] bg-primary rotate-45"></div>
-                <div className="absolute w-[120%] h-[4px] bg-primary -rotate-45"></div>
-                <div className="w-48 h-48 border-[2px] border-blue-300 rounded-full"></div>
-              </div>
+            <div className="h-[400px] flex items-center justify-center relative w-full">
+              <CircuitAssemblyGraphic />
             </div>
           </div>
         </div>
@@ -447,9 +444,8 @@ function ArchiveSection() {
               <h2 className="text-5xl md:text-7xl font-outfit font-bold text-navy mb-6">Telemetría<br /><span className="font-space-tech text-primary">Industrial</span></h2>
               <p className="text-lg text-text-secondary max-w-md">Lectura de sensores en tiempo real con baja latencia. Monitorea el comportamiento de la planta desde cualquier dispositivo de la red local.</p>
             </div>
-            <div className="h-[400px] flex items-center justify-center relative overflow-hidden bg-slate-900 rounded-[2rem] w-full max-w-md mx-auto">
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(37,99,235,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.2)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
-              <div className="w-full h-1 bg-red-500 absolute top-0 shadow-[0_0_15px_5px_rgba(239,68,68,0.5)] animate-[bounce_4s_ease-in-out_infinite]"></div>
+            <div className="h-[400px] flex items-center justify-center relative w-full">
+              <AntennaTransmissionGraphic />
             </div>
           </div>
         </div>
