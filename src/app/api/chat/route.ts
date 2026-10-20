@@ -8,24 +8,51 @@ interface ChatMessage {
   content: string;
 }
 
-// Cargar la base de conocimiento oficial desde Guias/conocimiento.txt con fallback
+// Cachear la base de conocimiento en memoria para no leer disco en cada petición
+let cachedSystemInstruction: string | null = null;
+
 function loadSystemInstruction(): string {
+  if (cachedSystemInstruction) {
+    return cachedSystemInstruction;
+  }
   try {
     const filePath = path.join(process.cwd(), "Guias", "conocimiento.txt");
     if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      return fileContent.trim();
+      cachedSystemInstruction = fs.readFileSync(filePath, "utf-8").trim();
+      return cachedSystemInstruction;
     }
   } catch (err) {
     console.error("No se pudo leer Guias/conocimiento.txt:", err);
   }
 
-  // Fallback seguro en caso de que el archivo no esté disponible
   return `ROL Y PERSONALIDAD:
 - Eres el Asistente Virtual Especializado del Proyecto Miacon y Sistemas de Control.
 - Tono: Extremadamente amable, paciente, empático, profesional y educativo.
 - Objetivo: Guiar al usuario con explicaciones claras, detalladas y fáciles de entender, adaptándose a su nivel técnico.
 - LÍMITES ESTRICTOS: SOLO TEXTO, LISTAS Y FÓRMULAS LATEX ($...$ o $$...$$). PROHIBIDO GENERAR CÓDIGO (nada de Python, C++, MATLAB, etc.) ni imágenes o diagramas visuales. Si piden código, declina con cortesía y explica la teoría o lógica algorítmica con palabras.`;
+}
+
+// Función para ejecutar una llamada con límite de tiempo (timeout) para evitar esperas largas
+async function createInteractionWithTimeout(
+  client: GoogleGenAI,
+  params: any,
+  timeoutMs: number
+) {
+  let timeoutHandle: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(new Error(`TIMEOUT_${timeoutMs}MS`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([
+      client.interactions.create(params),
+      timeoutPromise,
+    ]);
+  } finally {
+    clearTimeout(timeoutHandle!);
+  }
 }
 
 export async function POST(request: Request) {
@@ -44,12 +71,16 @@ export async function POST(request: Request) {
     const lastUserMessage = messages[messages.length - 1]?.content?.trim() || "";
     const apiKey = process.env.GEMINI_API_KEY?.trim();
 
-    // Actualizar modelos obsoletos según los estándares actuales de la API de Gemini
-    const rawModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
+    // Empezar directamente en el modelo ligero y estable (gemini-3.5-flash-lite)
+    // para evitar errores 503 de alta demanda en gemini-3.8-flash
+    const rawModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
     const primaryModel =
       rawModel.startsWith("gemini-2.") || rawModel.startsWith("gemini-1.")
-        ? "gemini-3.8-flash"
+        ? "gemini-3.5-flash-lite"
         : rawModel;
+
+    // Modelo de respaldo configurable desde Vercel
+    const customFallbackModel = process.env.GEMINI_FALLBACK_MODEL?.trim();
 
     // Modo demo / aviso cuando aún no se ha configurado GEMINI_API_KEY en Vercel o .env.local
     if (!apiKey) {
@@ -71,9 +102,16 @@ export async function POST(request: Request) {
             .join("\n\n")
         : lastUserMessage;
 
-    // Modelos con respaldo ante picos de demanda (503 / 429)
+    // Cadena de modelos empezando directamente en el nivel ligero y estable:
+    // 1. Modelo principal: gemini-3.5-flash-lite (equivalente actual y estable a la línea X.5, sin los picos 503 del 3.8)
+    // 2. Respaldo inferior: gemini-3.1-flash-lite
     const candidateModels = Array.from(
-      new Set([primaryModel, "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"])
+      new Set(
+        [
+          primaryModel,
+          customFallbackModel || "gemini-3.1-flash-lite",
+        ].filter(Boolean)
+      )
     );
 
     let interaction: any = null;
@@ -81,27 +119,49 @@ export async function POST(request: Request) {
 
     for (const candidateModel of candidateModels) {
       try {
-        interaction = await client.interactions.create({
-          model: candidateModel,
-          input: formattedInput,
-          system_instruction: systemInstruction,
-          ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
-        });
+        // Por defecto los modelos Gemini 3/4 usan thinking_level="high", lo que demora varios segundos extra.
+        // Usamos thinking_level="low" para que responda mucho más rápido en el chat sin perder calidad.
+        interaction = await createInteractionWithTimeout(
+          client,
+          {
+            model: candidateModel,
+            input: formattedInput,
+            system_instruction: systemInstruction,
+            generation_config: {
+              thinking_level: "low",
+            },
+            ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
+          },
+          12000 // Si un modelo tarda más de 12s, salta automáticamente al modelo de respaldo
+        );
         break;
       } catch (err: any) {
         lastError = err;
-        const msg = String(err?.message || "");
-        const isHighDemand =
+        const msg = String(err?.message || "").toLowerCase();
+        const status = Number(err?.status || err?.statusCode || 0);
+        const shouldFallback =
+          status === 429 ||
+          status === 503 ||
+          status === 500 ||
+          status === 404 ||
+          msg.includes("timeout_") ||
           msg.includes("503") ||
           msg.includes("429") ||
-          msg.toLowerCase().includes("high demand") ||
-          msg.toLowerCase().includes("overloaded");
+          msg.includes("500") ||
+          msg.includes("404") ||
+          msg.includes("resource_exhausted") ||
+          msg.includes("quota") ||
+          msg.includes("rate limit") ||
+          msg.includes("too many requests") ||
+          msg.includes("high demand") ||
+          msg.includes("overloaded") ||
+          msg.includes("unavailable");
 
-        if (!isHighDemand) {
+        if (!shouldFallback) {
           throw err;
         }
         console.warn(
-          `Modelo ${candidateModel} con alta demanda (503/429), reintentando con modelo de respaldo...`
+          `Modelo ${candidateModel} alcanzó límite de cuota o alta demanda (${err?.message}), bajando al modelo de respaldo...`
         );
       }
     }
@@ -126,7 +186,7 @@ export async function POST(request: Request) {
       {
         error:
           error?.message ||
-          "Ocurrió un error al comunicarse con el servicio de Google AI Studio. Verifica tu GEMINI_API_KEY en Vercel.",
+          "Ocurrió un error al comunicarse con el servicio de IA. Verifica tu GEMINI_API_KEY en Vercel.",
       },
       { status: 500 }
     );

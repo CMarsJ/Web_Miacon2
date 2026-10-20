@@ -1,15 +1,41 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import katex from "katex";
 
 interface FormattedMathTextProps {
   content: string;
 }
 
+// Función auxiliar para parsear negritas (**texto**) y cursivas (*texto*)
+function renderInlineFormatting(text: string, keyPrefix: string | number) {
+  // Regex para capturar negrita (**...**) y cursiva (*...*)
+  const tokens = text.split(/(\*\*[\s\S]+?\*\*|\*[^\*\n]+?\*)/g);
+
+  return tokens.map((token, idx) => {
+    const key = `${keyPrefix}-${idx}`;
+    if (token.startsWith("**") && token.endsWith("**") && token.length >= 4) {
+      return (
+        <strong key={key} className="font-bold text-navy">
+          {token.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (token.startsWith("*") && token.endsWith("*") && token.length >= 2) {
+      return (
+        <em key={key} className="italic text-slate-700">
+          {token.slice(1, -1)}
+        </em>
+      );
+    }
+    return <span key={key}>{token}</span>;
+  });
+}
+
 export default function FormattedMathText({ content }: FormattedMathTextProps) {
-  // Parser para segmentar texto plano y fórmulas LaTeX ($...$ inline y $$...$$ display)
-  const segments = useMemo(() => {
+  // Parser para segmentar fórmulas LaTeX ($...$ y $$...$$) y texto con markdown (negritas, listas)
+  const renderedElements = useMemo(() => {
+    // Capturamos fórmulas display ($$...$$) o inline ($...$)
     const mathRegex = /(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g;
     const parts = content.split(mathRegex);
 
@@ -21,40 +47,45 @@ export default function FormattedMathText({ content }: FormattedMathTextProps) {
             displayMode: true,
             throwOnError: false,
           });
-          return { type: "display-math", html, key: index };
+          return (
+            <span
+              key={`math-disp-${index}`}
+              dangerouslySetInnerHTML={{ __html: html }}
+              className="my-2.5 block overflow-x-auto py-1 text-center"
+            />
+          );
         } catch {
-          return { type: "text", text: part, key: index };
+          return <span key={`text-${index}`}>{part}</span>;
         }
-      } else if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
+      }
+
+      if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
         const mathExpr = part.slice(1, -1).trim();
         try {
           const html = katex.renderToString(mathExpr, {
             displayMode: false,
             throwOnError: false,
           });
-          return { type: "inline-math", html, key: index };
+          return (
+            <span
+              key={`math-inl-${index}`}
+              dangerouslySetInnerHTML={{ __html: html }}
+              className="mx-0.5 inline-block align-baseline"
+            />
+          );
         } catch {
-          return { type: "text", text: part, key: index };
+          return <span key={`text-${index}`}>{part}</span>;
         }
       }
-      return { type: "text", text: part, key: index };
+
+      // Procesar negritas y cursivas en el texto normal
+      return <React.Fragment key={`fmt-${index}`}>{renderInlineFormatting(part, index)}</React.Fragment>;
     });
   }, [content]);
 
   return (
     <span className="whitespace-pre-wrap break-words leading-relaxed">
-      {segments.map((seg) => {
-        if (seg.type === "display-math" || seg.type === "inline-math") {
-          return (
-            <span
-              key={seg.key}
-              dangerouslySetInnerHTML={{ __html: seg.html! }}
-              className={seg.type === "display-math" ? "my-2 block overflow-x-auto py-1" : "mx-0.5 inline"}
-            />
-          );
-        }
-        return <span key={seg.key}>{seg.text}</span>;
-      })}
+      {renderedElements}
     </span>
   );
 }

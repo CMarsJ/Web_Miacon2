@@ -216,15 +216,15 @@ export default function TutorPage() {
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-xs font-mono-data">
             <span
               className={`w-2 h-2 rounded-full ${
-                connectionMode === "demo"
-                  ? "bg-amber-400 animate-pulse"
-                  : "bg-emerald-400 animate-pulse"
+                connectionMode === "ready" || connectionMode === "live"
+                  ? "bg-emerald-400 animate-pulse"
+                  : "bg-rose-400"
               }`}
             />
-            <span className="text-slate-300 text-[11px]">
-              {connectionMode === "demo"
-                ? "MODO VISTA PREVIA (SIN API KEY)"
-                : "GOOGLE AI STUDIO • LISTO"}
+            <span className="text-slate-300 text-[11px] font-semibold">
+              {connectionMode === "ready" || connectionMode === "live"
+                ? "LISTO"
+                : "NO DISPONIBLE"}
             </span>
           </div>
         </div>
